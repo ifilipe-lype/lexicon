@@ -1,0 +1,24 @@
+[tool.poetry]
+name = "lexicon"
+version = "0.1.0"
+description = "Word Explorer - API and CLI for word definitions"
+authors = ["Your Name <you@example.com>"]
+packages = [{include = "lexicon", from = "src"}]
+
+[tool.poetry.dependencies]
+python = "^3.8"
+fastapi = "*"
+uvicorn = "*"
+pydantic = "*"
+ollama = "*"
+
+[tool.poetry.group.dev.dependencies]
+pytest = "*"
+
+[tool.poetry.scripts]
+lexicon-cli = "lexicon.interfaces.cli.main:main"
+web-dev = "tools.dev:main"
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
