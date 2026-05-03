@@ -16,7 +16,7 @@ ollama = "*"
 pytest = "*"
 
 [tool.poetry.scripts]
-lexicon-cli = "lexicon.interfaces.cli.main:main"
+lexicon-cli = "cli.main:main"
 web-dev = "tools.dev:main"
 
 [build-system]
