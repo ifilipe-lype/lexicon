@@ -57,6 +57,7 @@ All standard commands (e.g., `git status`, `pytest`) are transparently proxied v
 3. **Maintain API stability** – keep response schema identical; deprecate via versioned routes if needed.
 4. **Use the RTK hook** for all command‑line operations to reduce Claude token usage.
 5. **Follow existing linting/formatting** – `black` and `ruff` are configured via `pyproject.toml`.
+6. **Never commit or push changes unless explicitly asked** – wait for user instruction before git commit/push.
 
 ---
 
