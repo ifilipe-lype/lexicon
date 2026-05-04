@@ -1,35 +1,49 @@
-# Lexicon - Word Explorer API
+# Lexicon - Word Explorer
 
-A word definition and example explorer powered by Ollama LLM with a FastAPI backend and web interface.
+A word definition and example explorer with a FastAPI backend, web interface, and CLI — powered by LLMs through a provider abstraction (Ollama, OpenAI, Anthropic, etc.).
 
 ## Features
 
 - **HTTP API**: RESTful endpoints for word lookups
 - **Web UI**: Clean, responsive interface for exploring word definitions
-- **LLM-Powered**: Uses Ollama with structured JSON responses
+- **CLI**: Command-line interface for quick lookups
+- **LLM-Agnostic**: Provider pattern supports multiple LLM backends via LangChain
 - **Validation**: Pydantic models ensure data integrity
+- **Configuration**: Environment-based config with pydantic-settings
 
 ## Quick Start
 
 ### Prerequisites
 
-- Python 3.8+
-- Ollama running locally (default: `http://localhost:11434`)
-- Phi3 model pulled (`ollama pull phi3`)
+- Python 3.9+
+- Poetry (dependency management)
+- Ollama running locally (default: `http://localhost:11434`) or other supported LLM
 
 ### Installation
 
 ```bash
-pip install -r requirements.txt
+poetry install
 ```
 
 ### Running the Server
 
 ```bash
-python -m uvicorn api.main:app --reload
+poetry run web-dev
+```
+
+Or manually with uvicorn:
+
+```bash
+uvicorn src.http.app:app --reload
 ```
 
 Server starts at `http://localhost:8000`
+
+### CLI Usage
+
+```bash
+poetry run lexicon-cli search "ephemeral"
+```
 
 ## API Documentation
 
@@ -73,29 +87,43 @@ Visit `http://localhost:8000` in your browser to use the interactive UI:
 ### Running Tests
 
 ```bash
-pytest tests/test_api.py -v
+pytest tests/ -v
 ```
 
 ### Project Structure
 
 ```
 lexicon/
-├── api/
-│   ├── __init__.py
-│   └── main.py          # FastAPI application
-├── static/
-│   └── frontend/
-│       └── index.html   # Web UI
-├── tests/
-│   └── test_api.py     # API tests
-├── word_explorer.py    # Core logic & LLM integration
-├── requirements.txt    # Python dependencies
-└── README.md          # This file
+├── src/
+│   ├── lexicon/              # Core package
+│   │   ├── domain/          # Domain models (WordInput, WordDefinition)
+│   │   ├── application/     # Use cases and providers
+│   │   │   ├── prompts/    # Prompt templates
+│   │   │   └── providers/  # LLM provider interface
+│   │   ├── infrastructure/ # External adapters
+│   │   │   ├── inference/  # LangChain providers
+│   │   │   └── web/        # Static files
+│   │   └── settings.py     # Configuration
+│   ├── http/               # FastAPI application
+│   ├── cli/                # CLI entry point
+│   └── static/             # Static assets
+├── tests/                   # All tests
+├── pyproject.toml          # Poetry dependencies
+└── README.md              # This file
 ```
 
-## Configuration
+### Configuration
 
-Edit `OllamaConfig` in `word_explorer.py` to change:
-- `host`: Ollama server URL
-- `model_name`: LLM model (default: "phi3")
-- `timeout_sec`: Request timeout (default: 30s)
+Configuration is managed via `src/lexicon/settings.py` using pydantic-settings.
+
+Environment variables (optional):
+- `OLLAMA_MODEL` – LLM model (default: "phi3")
+- `OLLAMA_HOST` – Ollama server URL (default: "http://localhost:11434")
+- `OLLAMA_TEMPERATURE` – Temperature setting (default: 0.0)
+- `OLLAMA_VERBOSE` – Verbose output (default: false)
+
+### Adding a New LLM Provider
+
+1. Create a new provider class implementing `LLMProvider` interface
+2. Use LangChain integrations or implement directly
+3. Update configuration in `settings.py` if needed

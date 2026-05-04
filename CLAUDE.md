@@ -1,25 +1,40 @@
 # CLAUDE.md – Lexicon Project
 
-**Project:** Lexicon – Word Explorer API
+**Project:** Lexicon – LLM-Agnostic Word Explorer
 
-**Purpose:** Provide a FastAPI backend and web UI for exploring word definitions and example sentences powered by an Ollama LLM.
+**Purpose:** Provide a FastAPI backend and web UI for exploring word definitions and example sentences powered by LLMs through a provider abstraction (Ollama, OpenAI, Anthropic, etc.).
 
 ---
 
 ## Core Details
 - **API Endpoint**: `GET /search?word=<term>` – returns a JSON object with `definition` and `examples`.
-- **Web UI**: Served at `/` from `static/frontend/index.html`.
-- **LLM Integration**: Implemented in `word_explorer.py` using Ollama (`phi3` model by default).
-- **Configuration**: Adjust `OllamaConfig` in `word_explorer.py` for host, model, and timeout.
-- **Testing**: Run `pytest tests/test_api.py -v`.
+- **Web UI**: Served at `/` from `src/lexicon/infrastructure/web/static/index.html`.
+- **LLM Integration**: Provider pattern in `src/lexicon/infrastructure/inference/` with LangChain.
+- **Configuration**: `src/lexicon/settings.py` using pydantic-settings (env vars supported).
+- **CLI**: Run `poetry run lexicon-cli` for command-line usage.
+- **Testing**: Run `pytest tests/ -v`.
 
 ---
 
+## Architecture
+```
+src/lexicon/
+├── domain/              # Domain models (WordInput, WordDefinition)
+├── application/         # Use cases and providers
+│   ├── prompts/        # Prompt templates
+│   └── providers/      # LLM provider interface
+├── infrastructure/      # External adapters
+│   ├── inference/      # LangChain providers (Ollama, etc.)
+│   └── web/           # Static files and web UI
+└── settings.py         # Configuration
+```
+
 ## Development Guidelines
-- Keep FastAPI route definitions in `src/api/main.py` and static assets under `src/static/`.
-- Use Pydantic models for request validation – they guarantee a minimum 3‑character `word` query.
-- Ensure new endpoints follow the existing pattern: clear docstring, input validation, and proper HTTP status codes.
-- Run the server with `python -m uvicorn api.main:app --reload` during development.
+- **Layered architecture**: Domain → Application → Infrastructure
+- **Provider pattern**: Add new LLM support via `LLMProvider` interface
+- **FastAPI routes**: Defined in `src/http/app.py`
+- **Pydantic models**: Used for validation in `src/lexicon/domain/word.py`
+- **Run dev server**: `poetry run web-dev` or `uvicorn src.http.app:app --reload`
 
 ---
 
@@ -46,10 +61,20 @@ All standard commands (e.g., `git status`, `pytest`) are transparently proxied v
 ---
 
 ## Reference Files
-- `src/api/main.py` – FastAPI application and route definitions.
-- `src/word_explorer.py` – Core LLM interaction logic.
-- `src/static/frontend/index.html` – Web UI.
-- `requirements.txt` – Python dependencies.
+- `src/http/app.py` – FastAPI application and route definitions.
+- `src/lexicon/domain/word.py` – Domain models.
+- `src/lexicon/application/usecases/explore_word_usecase.py` – Business logic.
+- `src/lexicon/infrastructure/inference/langchain_provider.py` – LangChain integration.
+- `src/lexicon/settings.py` – Configuration settings.
+- `tests/` – All tests (API, CLI, domain, infrastructure).
+
+---
+
+## Dependencies
+Managed via Poetry (`pyproject.toml`):
+- `fastapi`, `uvicorn` – Web framework
+- `langchain-core`, `langchain-ollama` – LLM integration
+- `pydantic`, `pydantic-settings` – Data validation and configuration
 
 ---
 
