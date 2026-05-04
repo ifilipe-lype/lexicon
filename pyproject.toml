@@ -1,8 +1,8 @@
 [tool.poetry]
 name = "lexicon"
-version = "0.1.0"
-description = "Word Explorer - API and CLI for word definitions"
-authors = ["Your Name <you@example.com>"]
+version = "0.2.0"
+description = "Word Explorer - LLM-Agnostic API and CLI for word definitions"
+authors = ["ifilipe-lype <you@example.com>"]
 packages = [{include = "lexicon", from = "src"}]
 
 [tool.poetry.dependencies]
@@ -10,7 +10,11 @@ python = "^3.8"
 fastapi = "*"
 uvicorn = "*"
 pydantic = "*"
-ollama = "*"
+langchain = "*"
+langchain-ollama = "*"
+langchain-openai = "*"
+langchain-anthropic = "*"
+pydantic-settings = "*"
 
 [tool.poetry.group.dev.dependencies]
 pytest = "*"
