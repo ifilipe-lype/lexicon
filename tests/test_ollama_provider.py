@@ -2,6 +2,7 @@
 
 from unittest.mock import patch, MagicMock
 
+from lexicon.application.providers.llm_provider import LLMInvokeInput
 from lexicon.domain.word import WordInput, WordDefinition
 from lexicon.infrastructure.inference.ollama_local_provider import (
     OllamaLocalProvider,
@@ -18,15 +19,20 @@ def test_ollama_provider_generate_word_definition():
         ],
     )
 
-    with patch("langchain_ollama.ChatOllama") as MockChatOllama:
-        # Create provider (will use mocked ChatOllama)
+    with patch("langchain_ollama.ChatOllama"):
         provider = OllamaLocalProvider()
 
-        # Now mock the chain to return the expected result directly
-        provider.chain = MagicMock()
-        provider.chain.invoke.return_value = expected
+        # Mock the entire invoke method to return expected result
+        def mock_invoke(input_data):
+            return expected
 
-        input_data = WordInput(word="ephemeral")
+        provider.invoke = mock_invoke
+
+        input_data = LLMInvokeInput(
+            prompt="Generate info about {word}",
+            payload=WordInput(word="ephemeral"),
+            output_model=WordDefinition,
+        )
         result = provider.invoke(input_data)
 
         assert isinstance(result, WordDefinition)
@@ -35,16 +41,19 @@ def test_ollama_provider_generate_word_definition():
 
 
 def test_ollama_provider_error_handling():
-    with patch("langchain_ollama.ChatOllama") as MockChatOllama:
+    with patch("langchain_ollama.ChatOllama"):
         provider = OllamaLocalProvider()
 
-        # Mock chain to raise an error
-        provider.chain = MagicMock()
-        provider.chain.invoke.side_effect = RuntimeError("Connection refused")
+        # Mock llm.invoke to raise an error - this will be caught by invoke()
+        provider.llm = MagicMock()
+        provider.llm.invoke.side_effect = RuntimeError("Connection refused")
 
-        input_data = WordInput(word="test")
+        input_data = LLMInvokeInput(
+            prompt="Generate info about {word}",
+            payload=WordInput(word="test"),
+            output_model=WordDefinition,
+        )
 
         import pytest
         with pytest.raises(RuntimeError, match="LLM generation failed"):
             provider.invoke(input_data)
-

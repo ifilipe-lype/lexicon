@@ -1,25 +1,28 @@
 """Generic LangChain LLM provider that works with any LangChain chat model."""
 
+from typing import Generic, cast
+
 from langchain_core.prompts import ChatPromptTemplate
 from langchain_core.output_parsers import PydanticOutputParser
+from langchain_core.language_models.chat_models import BaseChatModel
 
-from lexicon.domain.word import WordInput, WordDefinition
-from lexicon.application.providers.llm_provider import LLMProvider
-from lexicon.application.prompts.word_prompt import build_word_prompt
+from lexicon.application.providers.llm_provider import LLMProvider, LLMInvokeInput, TPayload, TOutput
 
 
-class LangChainProvider(LLMProvider):
-    def __init__(self, llm):
+class LangChainProvider(LLMProvider, Generic[TPayload, TOutput]):
+    def __init__(self, llm: BaseChatModel):
         self.llm = llm
-        self.prompt = ChatPromptTemplate.from_messages([
-            ("user", build_word_prompt("{word}"))
-        ])
-        self.output_parser = PydanticOutputParser(pydantic_object=WordDefinition)
-        self.chain = self.prompt | self.llm | self.output_parser
 
-    def invoke(self, input_data: WordInput) -> WordDefinition:
+    def invoke(self, input_data: LLMInvokeInput[TPayload, TOutput]) -> TOutput:
         try:
-            result = self.chain.invoke(input_data)
-            return result
+            prompt = ChatPromptTemplate.from_messages([
+                ("user", input_data.prompt)
+            ])
+            output_parser = PydanticOutputParser(pydantic_object=input_data.output_model)
+            chain = prompt | self.llm | output_parser
+            
+            result = chain.invoke(input_data.payload)
+            
+            return cast(TOutput, result)
         except Exception as e:
             raise RuntimeError(f"LLM generation failed: {e}")

@@ -1,9 +1,10 @@
 """Tests for the ExploreWordUseCase."""
 
+from typing import cast
 from unittest.mock import MagicMock
 
 from lexicon.domain.word import WordDefinition
-from lexicon.application.providers.llm_provider import LLMProvider
+from lexicon.application.providers.llm_provider import LLMProvider, LLMInvokeInput
 
 
 def test_explore_word_calls_provider():
@@ -26,7 +27,8 @@ def test_explore_word_calls_provider():
     assert len(result.examples) == 3
     mock_provider.invoke.assert_called_once()
     call_args = mock_provider.invoke.call_args
-    assert call_args[0][0].word == "joy"
+    assert isinstance(call_args[0][0], LLMInvokeInput)
+    assert call_args[0][0].payload.word == "joy"
 
 
 def test_explore_word_requires_provider():
@@ -34,7 +36,7 @@ def test_explore_word_requires_provider():
     from lexicon.application.usecases.explore_word_usecase import ExploreWordUseCase
 
     try:
-        ExploreWordUseCase(llm_provider=None)
+        ExploreWordUseCase(llm_provider=cast(LLMProvider, None))
         assert False, "Should have raised"
     except Exception:
         pass  # Expected
