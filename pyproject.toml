@@ -6,14 +6,12 @@ authors = ["ifilipe-lype <you@example.com>"]
 packages = [{include = "lexicon", from = "src"}]
 
 [tool.poetry.dependencies]
-python = "^3.8"
+python = "^3.9"
 fastapi = "*"
 uvicorn = "*"
 pydantic = "*"
-langchain = "*"
+langchain-core = "*"
 langchain-ollama = "*"
-langchain-openai = "*"
-langchain-anthropic = "*"
 pydantic-settings = "*"
 
 [tool.poetry.group.dev.dependencies]
