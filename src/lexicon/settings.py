@@ -13,11 +13,11 @@ class Settings(BaseSettings):
 
     model_config = SettingsConfigDict(env_file=".env", env_file_encoding="utf-8", extra="ignore")
 
-    OLLAMA_MODEL: str = os.getenv("OLLAMA_MODEL", "gpt-4")
-    OLLAMA_TEMPERATURE: float = float(os.getenv("OLLAMA_TEMPERATURE", "0.7"))
+    OLLAMA_MODEL: str = os.getenv("OLLAMA_MODEL", "phi3")
+    OLLAMA_TEMPERATURE: float = float(os.getenv("OLLAMA_TEMPERATURE", "0.0"))
     OLLAMA_MAX_TOKENS: int = int(os.getenv("OLLAMA_MAX_TOKENS", "2048"))
     OLLAMA_VERBOSE: bool = os.getenv("OLLAMA_VERBOSE", "false").lower() in ("true", "1", "yes")
-    OLLAMA_HOST: str = os.getenv("OLLAMA_HOST", "")
+    OLLAMA_HOST: str = os.getenv("OLLAMA_HOST", "http://localhost:11434")
 
     @classmethod
     def load_settings(cls) -> "Settings":
