@@ -1,4 +1,5 @@
-ollama
+langchain
+langchain-ollama
 pydantic
 fastapi
 uvicorn

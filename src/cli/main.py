@@ -3,9 +3,10 @@
 import argparse
 import sys
 
-from lexicon.application.services.word_explorer import explore_word
-from lexicon.domain.models.word import WordInput
 from pydantic import ValidationError
+from lexicon.domain.word import WordInput
+from lexicon.application.usecases.explore_word_usecase import ExploreWordUseCase
+from lexicon.infrastructure.inference.ollama_local_provider import OllamaLocalProvider
 
 
 def main() -> None:
@@ -20,7 +21,9 @@ def main() -> None:
         sys.exit(1)
 
     try:
-        result = explore_word(args.word)
+        provider = OllamaLocalProvider()
+        use_case = ExploreWordUseCase(llm_provider=provider)
+        result = use_case.execute(args.word)
     except Exception as exc:
         print(f"Error: {exc}", file=sys.stderr)
         sys.exit(1)

@@ -1,6 +1,6 @@
 """Tests for domain models."""
 
-from lexicon.domain.models.word import WordInput, WordDefinition, OllamaConfig
+from lexicon.domain.word import WordInput, WordDefinition
 from pydantic import ValidationError
 
 
@@ -48,17 +48,3 @@ def test_word_definition_truncates_extra_examples():
         examples=["One.", "Two.", "Three.", "Four.", "Five."],
     )
     assert len(wd.examples) == 3
-
-
-def test_ollama_config_defaults():
-    config = OllamaConfig()
-    assert config.host == "http://localhost:11434"
-    assert config.model_name == "phi3"
-    assert config.timeout_sec == 30
-
-
-def test_ollama_config_custom():
-    config = OllamaConfig(host="http://remote:11434", model_name="llama3", timeout_sec=60)
-    assert config.host == "http://remote:11434"
-    assert config.model_name == "llama3"
-    assert config.timeout_sec == 60

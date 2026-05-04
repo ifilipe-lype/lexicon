@@ -10,9 +10,13 @@ from fastapi import FastAPI, HTTPException, Query
 from fastapi.staticfiles import StaticFiles
 from fastapi.responses import RedirectResponse
 
-from lexicon.application.services.word_explorer import explore_word
+from lexicon.application.usecases.explore_word_usecase import ExploreWordUseCase
+from lexicon.infrastructure.inference.ollama_local_provider import OllamaLocalProvider
 
 app = FastAPI(title="Lexicon Word Explorer API")
+
+# Create the LLM provider based on configuration (env vars)
+ollama_provider = OllamaLocalProvider()
 
 # Serve static UI from '/static' (does not shadow API routes)
 static_dir = os.path.join(os.path.dirname(__file__), 'static', 'frontend')
@@ -21,10 +25,9 @@ if os.path.exists(static_dir):
 
 @app.get("/search")
 async def search(word: str = Query(..., description="Word to search (minimum 3 characters)")):
-    if len(word) < 3:
-        raise HTTPException(status_code=400, detail="Word must be at least 3 characters long")
     try:
-        result = explore_word(word)
+        use_case = ExploreWordUseCase(llm_provider=ollama_provider)
+        result = use_case.execute(word)
         return {"definition": result.definition, "examples": result.examples}
     except ValueError as exc:
         raise HTTPException(status_code=400, detail=str(exc))

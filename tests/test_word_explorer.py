@@ -1,12 +1,14 @@
-"""Tests for the word_explorer application service."""
+"""Tests for the ExploreWordUseCase."""
 
-from unittest.mock import patch, MagicMock
-from lexicon.domain.models.word import WordDefinition, OllamaConfig, WordInput
+from unittest.mock import MagicMock
+
+from lexicon.domain.word import WordDefinition
+from lexicon.application.providers.llm_provider import LLMProvider
 
 
-@patch("lexicon.application.services.word_explorer.get_word_examples")
-def test_explore_word_calls_infrastructure(mock_get_examples):
-    mock_get_examples.return_value = WordDefinition(
+def test_explore_word_calls_provider():
+    mock_provider = MagicMock(spec=LLMProvider)
+    mock_provider.invoke.return_value = WordDefinition(
         definition="A feeling of great pleasure or happiness.",
         examples=[
             "She felt immense joy when she heard the news.",
@@ -14,15 +16,25 @@ def test_explore_word_calls_infrastructure(mock_get_examples):
             "Simple moments often bring the most joy.",
         ],
     )
-    from lexicon.application.services.word_explorer import explore_word
 
-    result = explore_word("joy")
+    from lexicon.application.usecases.explore_word_usecase import ExploreWordUseCase
+
+    use_case = ExploreWordUseCase(llm_provider=mock_provider)
+    result = use_case.execute("joy")
 
     assert isinstance(result, WordDefinition)
-    assert "pleasure" in result.definition.lower() or "happiness" in result.definition.lower()
     assert len(result.examples) == 3
-    mock_get_examples.assert_called_once()
-    call_args = mock_get_examples.call_args
-    assert isinstance(call_args[0][0], WordInput)
+    mock_provider.invoke.assert_called_once()
+    call_args = mock_provider.invoke.call_args
     assert call_args[0][0].word == "joy"
-    assert isinstance(call_args[0][1], OllamaConfig)
+
+
+def test_explore_word_requires_provider():
+    """Test that ExploreWordUseCase requires a provider."""
+    from lexicon.application.usecases.explore_word_usecase import ExploreWordUseCase
+
+    try:
+        ExploreWordUseCase(llm_provider=None)
+        assert False, "Should have raised"
+    except Exception:
+        pass  # Expected

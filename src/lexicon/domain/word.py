@@ -14,12 +14,6 @@ class WordInput(BaseModel):
         return v
 
 
-class OllamaConfig(BaseModel):
-    host: str = "http://localhost:11434"
-    model_name: str = "phi3"
-    timeout_sec: int = 30
-
-
 class WordDefinition(BaseModel):
     definition: str = Field(..., description="One-paragraph definition")
     examples: List[str] = Field(..., description="Exactly three example sentences")
