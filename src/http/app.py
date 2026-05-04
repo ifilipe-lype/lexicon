@@ -4,7 +4,9 @@ Provides a `/search` endpoint that returns a word definition and three example
 sentences. The handler delegates to the application service, keeping the web
 layer thin and testable.
 """
+import logging
 import os
+import traceback
 
 from fastapi import FastAPI, HTTPException, Query
 from fastapi.staticfiles import StaticFiles
@@ -32,6 +34,7 @@ async def search(word: str = Query(..., description="Word to search (minimum 3 c
     except ValueError as exc:
         raise HTTPException(status_code=400, detail=str(exc))
     except Exception as exc:
+        logging.error("Internal server error: %s\n%s", str(exc), traceback.format_exc())
         raise HTTPException(status_code=500, detail=str(exc))
 
 
